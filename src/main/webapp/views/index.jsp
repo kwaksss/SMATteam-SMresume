@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -28,9 +29,9 @@
 <header class="masthead text-center text-white">
     <div class="masthead-content">
         <div class="container px-5">
-            <h1 class="masthead-heading mb-0">이력서, 이제 스마트하게 분석하세요.</h1>
-            <h2 class="masthead-subheading mb-0">인공지능이 당신의 이력서를 완벽하게 진단합니다.</h2>
-            <a class="btn btn-primary btn-xl rounded-pill mt-5" href="/resume/input">서비스 자세히 보기</a>
+            <h1 class="masthead-heading mb-0">Smart Resume Analysis.</h1>
+            <%--            <h2 class="masthead-subheading mb-0">JUST DO IT</h2>--%>
+            <a class="btn btn-primary btn-xl rounded-pill mt-5" href="/resume/input">Learn More</a>
         </div>
     </div>
     <div class="bg-circle-1 bg-circle"></div>

@@ -10,6 +10,7 @@
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;
@@ -28,13 +29,20 @@
   --bs-gray-100: #f8f9fa;
   --bs-gray-200: #e9ecef;
   --bs-gray-300: #dee2e6;
+
+
   --bs-gray-400: #ced4da;
   --bs-gray-500: #adb5bd;
   --bs-gray-600: #6c757d;
   --bs-gray-700: #495057;
   --bs-gray-800: #343a40;
   --bs-gray-900: #212529;
-  --bs-primary: #ee0979;
+  --bs-primary: #85a3c2; /* 물빠진 파란색 (예시 1) - 회색빛이 도는 파랑 */
+  /* 다른 물빠진 파란색 옵션: */
+  /* --bs-primary: #6a9acb; */ /* 좀 더 생기 있는 물빠진 파랑 */
+  /* --bs-primary: #a7c5e2; */ /* 더 밝은 물빠진 파랑 */
+  /* =============================== */
+
   --bs-secondary: #ff6a00;
   --bs-success: #198754;
   --bs-info: #0dcaf0;
@@ -42,7 +50,11 @@
   --bs-danger: #dc3545;
   --bs-light: #f8f9fa;
   --bs-dark: #212529;
-  --bs-primary-rgb: 238, 9, 121;
+  --bs-primary-rgb: 133, 163, 194; /* 위에 설정한 primary 색상에 맞는 RGB 값 (예시 1) */
+  /* 다른 옵션에 맞는 RGB 값: */
+  /* --bs-primary-rgb: 106, 154, 203; */
+  /* --bs-primary-rgb: 167, 197, 226; */
+  /* =========================================== */
   --bs-secondary-rgb: 255, 106, 0;
   --bs-success-rgb: 25, 135, 84;
   --bs-info-rgb: 13, 202, 240;
@@ -73,8 +85,8 @@
   --bs-border-radius-xl: 1rem;
   --bs-border-radius-2xl: 2rem;
   --bs-border-radius-pill: 50rem;
-  --bs-link-color: #ee0979;
-  --bs-link-hover-color: #be0761;
+  --bs-link-color: #85a3c2; /* 링크 색상도 기본 primary와 동일하게 */
+  --bs-link-hover-color: #6a9acb; /* 링크 호버 색상 - 위 primary보다 약간 진하게 */
   --bs-code-color: #ee0979;
   --bs-highlight-bg: #fff3cd;
 }
@@ -10880,8 +10892,16 @@ header.masthead .bg-circle {
   z-index: 0;
   position: absolute;
   border-radius: 100%;
-  background: linear-gradient(0deg, #ee0979 0%, #ff6a00 100%);
+  /* ===== 이 부분을 수정합니다. ===== */
+  /* 원래: background: linear-gradient(0deg, #ee0979 0%, #ff6a00 100%); */
+  background-color: rgba(255, 255, 255, 0.15); /* 흰색 배경색 + 투명도 */
+  /* 또는 좀 더 진한 투명도를 원하면 opacity 값을 조절하세요 (예: 0.2 또는 0.3) */
+  /* background-color: rgba(255, 255, 255, 0.2); */
+  /* background-color: rgba(255, 255, 255, 0.3); */
+  /* ================================ */
 }
+
+/* 아래 개별 원의 위치와 크기는 그대로 유지하거나 필요에 따라 조절할 수 있습니다. */
 header.masthead .bg-circle-1 {
   height: 90rem;
   width: 90rem;
@@ -10908,14 +10928,58 @@ header.masthead .bg-circle-4 {
 }
 
 @media (min-width: 992px) {
+  /* Custom Header Background Color */
   header.masthead {
-    padding-top: calc(10rem + 55px);
-    padding-bottom: 10rem;
+    /* 기존 배경 이미지나 그라데이션이 있다면 이를 덮어쓰기 위해 초기화합니다. */
+    background: none;
+
+    /* 연두색 계열의 배경색을 지정합니다. */
+    /* 원하는 연두색 계열의 Hex 코드를 여기에 넣어주세요. */
+    background-color: #a8e6cf; /* 연한 민트색/연두색 계열 (이전 추천 색상) */
+    /* 다른 연두색 옵션: */
+    /* background-color: #c7f2a4; */ /* 좀 더 노란기 있는 연두색 */
+    /* background-color: #98fb98; */ /* 파스텔 연두색 */
+    /* background-color: #90ee90; */ /* 연한 녹색 */
+
+    /* 만약 header.masthead에 원래 패딩이나 높이 설정이 너무 커서 공간이 어색하다면,
+       아래 주석 처리된 속성을 조절해볼 수 있습니다. */
+    /* padding-top: 10rem; */
+    /* padding-bottom: 10rem; */
   }
   header.masthead .masthead-content .masthead-heading {
     font-size: 6rem;
   }
   header.masthead .masthead-content .masthead-subheading {
     font-size: 4rem;
+  }
+
+  /* Custom Button Primary Color - 맨 마지막에 추가하여 강제 적용 */
+  .btn-primary {
+    background-color: #6a9acb !important; /* 물빠진 파란색 - !important로 강제 적용 */
+    border-color: #6a9acb !important; /* 테두리 색상도 동일하게 */
+    color: #fff !important; /* 텍스트 색상 (흰색) */
+  }
+
+  .btn-primary:hover {
+    background-color: #5587ba !important; /* 호버 시 약간 더 진한 파란색 */
+    border-color: #5587ba !important;
+  }
+
+  .btn-primary:focus,
+  .btn-primary.focus {
+    box-shadow: 0 0 0 0.25rem rgba(106, 154, 203, 0.5) !important; /* 포커스 시 그림자 색상 */
+  }
+
+  .btn-primary:active,
+  .btn-primary.active {
+    background-color: #5587ba !important;
+    border-color: #5587ba !important;
+  }
+
+  .btn-primary:disabled,
+  .btn-primary.disabled {
+    background-color: #6a9acb !important;
+    border-color: #6a9acb !important;
+    opacity: 0.65;
   }
 }
