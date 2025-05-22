@@ -1,0 +1,58 @@
+server:
+  port: 8082
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+#    multipart:
+#      max-file-size: 10MB
+#      max-request-size: 10MB
+#2. SpringBoot Environment Setting
+spring:
+  mvc:
+    view:
+      prefix: /views/
+      suffix: .jsp
+  datasource:
+    url: jdbc:mysql://192.168.34.18:3306/smresume?serverTimezone=Asia/Seoul
+    username: insung
+    password: 1234
+#Mybatis Setting
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${client-id}
+            client-secret: ${client-secret}
+            scope:
+              - account_email
+              - profile_nickname
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            client-name: Kakao
+            client-authentication-method: client_secret_post
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+#mybatis:
+#  type-aliases-package: sm.ac.app.dto
+#  mapper-locations: classpath:/mapper/*.xml
+#  configuration:
+#    map-underscore-to-camel-case: true
+
+#4. Logging Setting
+logging:
+  level:
+    root: info
+    org.springframework.web.socket.messaging: debug
+    org.springframework.messaging.simp: debug
+    # OpenAI API 관련 로깅 (필요에 따라 조절)
+    org.springframework.web.client.RestTemplate: debug
+    sm.ac.controller.sm.ac.app.controller.ResumeController: debug
+openai:
+  api-key: ${openai.api-key}
