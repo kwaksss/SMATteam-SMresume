@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -19,8 +19,20 @@
         <a class="navbar-brand" href="#page-top">SMResume</a> <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="#!">회원가입</a></li>
-                <li class="nav-item"><a class="nav-link" href="#!">로그인</a></li>
+
+                <c:choose>
+                    <c:when test="${sessionScope.loginid == null}">
+                        <li class="nav-item"><a class="nav-link" href="/register">회원가입</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/login">로그인</a></li>
+                    </c:when>
+                    <c:otherwise>
+
+                        <li class="nav-item"><a class="nav-link" href="/my-analysis-history">내 분석 기록</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/login">${sessionScope.loginid.userid}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/logout">로그아웃</a></li>
+                    </c:otherwise>
+                </c:choose>
+
             </ul>
         </div>
     </div>

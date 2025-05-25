@@ -88,6 +88,14 @@ dependencies {
     implementation 'org.webjars:stomp-websocket:2.3.3'
     implementation 'org.webjars:bootstrap:3.3.7'
 
+    // AWS SDK v2 for S3
+    implementation 'software.amazon.awssdk:s3'
+    // AWS SDK v2 for DynamoDB
+    implementation 'software.amazon.awssdk:dynamodb'
+    // AWS SDK v2 for BOM (버전 관리를 위해)
+    implementation platform('software.amazon.awssdk:bom:2.20.100') // 최신 버전 확인
+
+
 //    implementation 'org.springframework.security:spring-security-messaging' // Spring Security의 메시징 보안
 
 }

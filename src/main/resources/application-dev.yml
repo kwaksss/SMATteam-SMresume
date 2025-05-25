@@ -7,6 +7,17 @@ server:
 #    multipart:
 #      max-file-size: 10MB
 #      max-request-size: 10MB
+
+aws:
+  accessKeyId: ${AWS_ACCESS_KEY_ID}     # 여기에 발급받은 AWS 액세스 키 ID를 넣습니다.
+  secretAccessKey: ${AWS_SECRET_ACCESS_KEY} # 여기에 발급받은 AWS 비밀 액세스 키를 넣습니다.
+  region: ap-northeast-2                   # S3 버킷과 DynamoDB 테이블이 생성된 AWS 리전을 넣습니다.
+  # (예: 서울 리전은 ap-northeast-2)
+  s3:
+    bucketName: smresumebucket # 2단계에서 생성한 S3 버킷 이름을 넣습니다.
+  dynamodb:
+    tableName: resume-analysis-results       # 3단계에서 생성한 DynamoDB 테이블 이름을 넣습니다.
+
 #2. SpringBoot Environment Setting
 spring:
   mvc:
@@ -14,8 +25,8 @@ spring:
       prefix: /views/
       suffix: .jsp
   datasource:
-    url: jdbc:mysql://192.168.34.18:3306/smresume?serverTimezone=Asia/Seoul
-    username: insung
+    url: jdbc:mysql://127.0.0.1:3306/smresume?serverTimezone=Asia/Seoul
+    username: root
     password: 1234
 #Mybatis Setting
   security:
@@ -39,11 +50,11 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-#mybatis:
-#  type-aliases-package: sm.ac.app.dto
-#  mapper-locations: classpath:/mapper/*.xml
-#  configuration:
-#    map-underscore-to-camel-case: true
+mybatis:
+  type-aliases-package: me.kwakinsung.smresume.app.dto
+  mapper-locations: classpath:/mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
 
 #4. Logging Setting
 logging:

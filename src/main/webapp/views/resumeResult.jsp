@@ -111,6 +111,13 @@
     <header class="page-header">
         <h1><i class="fas fa-chart-line me-2"></i>AI 이력서 분석 결과</h1>
         <p class="lead page-description">제출하신 이력서에 대한 AI 분석 결과 및 최적화 제안입니다.</p>
+        <%-- 파일명과 목표 직무 표시 (추가) --%>
+        <c:if test="${not empty originalFileName}">
+            <p><strong>분석 이력서:</strong> ${originalFileName}</p>
+        </c:if>
+        <c:if test="${not empty targetJob}">
+            <p><strong>목표 직무:</strong> ${targetJob}</p>
+        </c:if>
     </header>
 
     <section class="analysis-result">
