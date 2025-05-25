@@ -36,7 +36,7 @@
         <a href="/oauth2/authorization/kakao" class="btn btn-warning w-100">Kakao 로그인</a>
 
         <p class="text-center mt-3">
-            계정이 없나요? <a href="/signup">회원가입</a>
+            계정이 없나요? <a href="/register">회원가입</a>
         </p>
     </div>
 </div>

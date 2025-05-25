@@ -1,27 +1,36 @@
 // src/main/java/me/kwakinsung/smresume/app/controller/MainController.java
 package me.kwakinsung.smresume.app.controller;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession; // Servlet API에서 직접 HttpSession 사용
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.kwakinsung.smresume.app.dto.UserDto;
 import me.kwakinsung.smresume.app.service.UserService;
-import me.kwakinsung.smresume.app.service.ResumeStorageService; // ResumeStorageService 임포트
+import me.kwakinsung.smresume.app.service.ResumeStorageService;
+import org.springframework.beans.factory.annotation.Value; // @Value 어노테이션을 위해 추가
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList; // 필요시 추가
+import java.util.HashMap;   // 필요시 추가
 import java.util.List;
-import java.util.Map; // Map을 사용하기 위해 임포트
+import java.util.Map;
 
 @Controller
 @Slf4j
-@RequiredArgsConstructor // final 필드들을 위한 생성자를 자동으로 생성하여 의존성 주입 (lombok)
+@RequiredArgsConstructor
 public class MainController {
 
     private final UserService userService;
-    private final ResumeStorageService resumeStorageService; // ResumeStorageService 주입
+    private final ResumeStorageService resumeStorageService;
+
+    // application.properties 또는 application.yml 파일에 정의된 값들을 주입받습니다.
+    @Value("${aws.s3.bucketName}")
+    private String s3BucketName;
+    @Value("${aws.region}")
+    private String s3Region; // 예: ap-northeast-2
 
     // 메인 페이지
     @RequestMapping("/")
@@ -46,12 +55,9 @@ public class MainController {
     public String processSignUp(@ModelAttribute UserDto userDto,
                                 RedirectAttributes redirectAttributes,
                                 Model model) throws Exception {
-        // 비밀번호 해싱 등 실제 보안 강화 로직이 필요합니다.
-        // 현재는 간단한 예시입니다.
-
         userService.add(userDto);
         log.info("회원가입 성공: {}", userDto.getUserid());
-        log.info("회원가입 성공: {}", userDto.getUserpassword()); // 실제 서비스에서는 비밀번호 로깅 금지!
+        // log.info("회원가입 성공: {}", userDto.getUserpassword()); // 실제 서비스에서는 비밀번호 로깅 금지!
 
         redirectAttributes.addFlashAttribute("successMessage", "회원가입이 성공적으로 완료되었습니다. 로그인해주세요.");
         return "redirect:/login"; // 로그인 페이지로 리다이렉트
@@ -117,7 +123,27 @@ public class MainController {
         }
 
         List<Map<String, String>> history = resumeStorageService.getUserAnalysisResults(loggedInUsername);
-        model.addAttribute("analysisHistory", history); // JSP로 기록 리스트 전달
+
+        // Pre-signed URL 로직 (선택 사항 - 보안 강화를 위해 권장)
+        // 만약 S3 버킷을 public-read로 설정했다면 아래 로직은 필수는 아님.
+        // 하지만 보안상 Pre-signed URL을 쓰는 것이 훨씬 좋음.
+        List<Map<String, String>> processedHistory = new ArrayList<>();
+        for (Map<String, String> item : history) {
+            Map<String, String> newItem = new HashMap<>(item);
+            String s3ResumePath = item.get("s3ResumePath"); // DynamoDB에서 가져온 경로
+
+            if (s3ResumePath != null && !s3ResumePath.isEmpty() && !s3ResumePath.equals("N/A")) {
+                // Pre-signed URL을 ResumeStorageService에서 생성하여 가져오는 경우 (보안 권장)
+                // String presignedUrl = resumeStorageService.generatePresignedUrlForDownload(s3ResumePath);
+                // newItem.put("s3ResumeFileUrl", presignedUrl);
+
+                // 현재처럼 S3 버킷이 public-read로 설정된 경우 직접 URL 구성 (테스트용, 보안 취약)
+                newItem.put("s3ResumeFileUrl", "https://" + s3BucketName + ".s3." + s3Region + ".amazonaws.com/" + s3ResumePath);
+            }
+            processedHistory.add(newItem);
+        }
+
+        model.addAttribute("analysisHistory", processedHistory); // JSP로 기록 리스트 전달 (URL 포함)
         return "myAnalysisHistory"; // myAnalysisHistory.jsp 템플릿 반환
     }
 
@@ -137,8 +163,6 @@ public class MainController {
         }
 
         // 보안을 위해, 요청된 analysisId가 현재 로그인된 사용자의 것인지 확인하는 로직 (중요!)
-        // DynamoDB에 userId와 analysisId를 함께 조회하는 효율적인 방법이 있지만,
-        // 현재는 getUserAnalysisResults로 가져온 기록에서 필터링하는 방식 사용
         List<Map<String, String>> history = resumeStorageService.getUserAnalysisResults(loggedInUsername);
         String s3Path = null;
         String originalFileName = null;
@@ -158,7 +182,7 @@ public class MainController {
         if (s3Path == null || s3Path.isEmpty()) {
             log.warn("사용자 {}의 analysisId {}에 대한 S3 경로를 찾을 수 없습니다. (혹은 권한 없음)", loggedInUsername, analysisId);
             model.addAttribute("errorMessage", "해당 분석 결과를 찾을 수 없거나 접근 권한이 없습니다.");
-            return "errorPage"; // 적절한 에러 페이지 (예: error.jsp 또는 에러 메시지를 포함한 myAnalysisHistory.jsp)
+            return "redirect:/my-analysis-history"; // 에러 메시지와 함께 목록 페이지로 리다이렉트
         }
 
         // S3에서 상세 분석 결과 JSON 로드
@@ -168,5 +192,32 @@ public class MainController {
         model.addAttribute("targetJob", targetJob); // JSP에 표시할 목표 직무
 
         return "resumeResult"; // 기존 resumeResult.jsp 템플릿 재사용 (상세 내용 표시)
+    }
+
+    // 삭제 엔드포인트 추가
+    @PostMapping("/my-analysis/delete/{analysisId}")
+    public String deleteAnalysisResult(@PathVariable("analysisId") String analysisId,
+                                       HttpSession session,
+                                       RedirectAttributes redirectAttributes) {
+        String loggedInUsername = null;
+        UserDto loggedInUser = (UserDto) session.getAttribute("loginid");
+        if (loggedInUser != null && loggedInUser.getUsername() != null) {
+            loggedInUsername = loggedInUser.getUsername();
+        }
+
+        if (loggedInUsername == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인해야 이력서 분석 기록을 삭제할 수 있습니다.");
+            return "redirect:/login";
+        }
+
+        boolean success = resumeStorageService.deleteAnalysisResult(loggedInUsername, analysisId);
+
+        if (success) {
+            redirectAttributes.addFlashAttribute("successMessage", "이력서 분석 기록이 성공적으로 삭제되었습니다.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "이력서 분석 기록 삭제에 실패했습니다. 다시 시도해주세요.");
+        }
+
+        return "redirect:/my-analysis-history";
     }
 }
