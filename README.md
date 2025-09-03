@@ -1,7 +1,7 @@
 # AI를 활용한 이력서 분석 웹 서비스 📝
 
 PL (Project Leader) : 곽인성 <br>
-Front&Back DEV : 곽인성,,황민우  
+Front&Back DEV : 곽인성,황민우  
 기간: 
 
 
