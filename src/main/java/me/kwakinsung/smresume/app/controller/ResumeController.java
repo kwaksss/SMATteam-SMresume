@@ -54,6 +54,13 @@ public class ResumeController {
         return "resumeInput"; // 이력서 입력 폼 페이지
     }
 
+    @GetMapping("/result")
+    public String showResultPage() {
+        // 그냥 JSP만 보여주고, model 값은 없음
+        return "resumeResult";
+    }
+
+
     @PostMapping("/result") // 이력서 분석 및 결과 표시
     public String analyzeResumeAndShowResult(
             @RequestParam(value = "resumeFile", required = false) MultipartFile resumeFile,
