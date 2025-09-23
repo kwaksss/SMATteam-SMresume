@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,8 +163,18 @@ public class ResumeController {
         }
     }
 
+    // 텍스트 분할 함수 (문자 수 기준)
+    private List<String> splitText(String text, int chunkSize) {
+        List<String> chunks = new ArrayList<>();
+        int length = text.length();
+        for (int i = 0; i < length; i += chunkSize) {
+            chunks.add(text.substring(i, Math.min(length, i + chunkSize)));
+        }
+        return chunks;
+    }
 
-    private Map<String, Map<String, String>> callOpenAiApi(String resumeContent, String targetJob) throws IOException {
+
+    /*private Map<String, Map<String, String>> callOpenAiApi(String resumeContent, String targetJob) throws IOException {
         String apiUrl = "https://api.openai.com/v1/chat/completions";
         String model = "gpt-3.5-turbo"; // 사용할 모델
 
@@ -248,5 +259,86 @@ public class ResumeController {
         }
         // 정상적인 경우 이곳에 도달하지 않아야 하므로 null 반환 대신 예외를 던지는 것이 더 명확
         throw new IOException("OpenAI API 응답이 유효하지 않습니다.");
+    }*/
+    private Map<String, Map<String, String>> callOpenAiApi(String resumeContent, String targetJob) throws IOException {
+        String apiUrl = "https://api.openai.com/v1/chat/completions";
+        String model = "gpt-3.5-turbo";
+
+        if (targetJob == null || targetJob.trim().isEmpty()) {
+            targetJob = "일반";
+        }
+
+        // 1) 긴 이력서 텍스트를 쪼개기
+        List<String> chunks = splitText(resumeContent, 2000); // 2000자 단위
+        List<String> partialSummaries = new ArrayList<>();
+
+        // 2) 각 chunk 요약
+        for (String chunk : chunks) {
+            String chunkPrompt = String.format(
+                    "다음은 이력서 일부입니다. %s 직무 관점에서 핵심 요약을 해주세요:\n\n%s",
+                    targetJob, chunk
+            );
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", model);
+            requestBody.put("messages", List.of(Map.of("role", "user", "content", chunkPrompt)));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + openaiApiKey);
+            headers.set("Content-Type", "application/json");
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<Map> response = openaiRestTemplate.postForEntity(apiUrl, requestEntity, Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
+                if (!choices.isEmpty()) {
+                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                    String content = (String) message.get("content");
+                    partialSummaries.add(content);
+                }
+            }
+        }
+
+        // 3) 부분 요약을 합쳐서 최종 분석 프롬프트 구성
+        String finalPrompt = String.format(
+                """
+                당신은 %1$s 분야의 채용 전문가입니다. 다음은 이력서 부분 요약들입니다.
+                이를 종합해서 %2$s 직무 지원자의 관점에서 분석해 주세요.
+    
+                이력서 부분 요약:
+                %3$s
+                """,
+                targetJob.split(" ")[0], targetJob, String.join("\n", partialSummaries)
+        );
+
+        Map<String, Object> finalRequest = new HashMap<>();
+        finalRequest.put("model", model);
+        finalRequest.put("messages", List.of(Map.of("role", "user", "content", finalPrompt)));
+        finalRequest.put("temperature", 0.7);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + openaiApiKey);
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(finalRequest, headers);
+        ResponseEntity<Map> finalResponse = openaiRestTemplate.postForEntity(apiUrl, requestEntity, Map.class);
+
+        if (finalResponse.getStatusCode().is2xxSuccessful() && finalResponse.getBody() != null) {
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) finalResponse.getBody().get("choices");
+            if (!choices.isEmpty()) {
+                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                String content = (String) message.get("content");
+                return objectMapper.readValue(content, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Map<String, String>>>() {});
+            }
+        }
+        throw new IOException("OpenAI API 최종 분석 실패");
     }
+    //긴 이력서 → 잘라서 요약
+    //
+    //요약 결과 → 다시 합쳐서 최종 분석
+    //
+    //gpt-3.5-turbo에서도 안정적으로 동작
+    //2025.09.03
+
 }
