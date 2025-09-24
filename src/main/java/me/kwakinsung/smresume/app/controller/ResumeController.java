@@ -269,7 +269,7 @@ public class ResumeController {
         }
 
         // 1) 긴 이력서 텍스트를 쪼개기
-        List<String> chunks = splitText(resumeContent, 2000); // 2000자 단위
+        List<String> chunks = splitText(resumeContent, 1000); // 2000자 단위
         List<String> partialSummaries = new ArrayList<>();
 
         // 2) 각 chunk 요약
@@ -305,6 +305,7 @@ public class ResumeController {
                 """
                 당신은 %1$s 분야의 채용 전문가입니다. 다음은 이력서 부분 요약들입니다.
                 이를 종합해서 %2$s 직무 지원자의 관점에서 분석해 주세요.
+                STAR 관점에서도 부족한 부분을 말씀해주시면 좋겠습니다.
     
                 이력서 부분 요약:
                 %3$s
