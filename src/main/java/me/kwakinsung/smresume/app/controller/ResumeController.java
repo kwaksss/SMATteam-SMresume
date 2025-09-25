@@ -125,7 +125,7 @@ public class ResumeController {
         // OpenAI API 호출
         if (!contentToAnalyze.isEmpty()) {
             try {
-                Map<String, Map<String, Object>> analysisResultMap = analyzeResumeWithSTAR(contentToAnalyze);
+                Map<String, Map<String, String>> analysisResultMap = analyzeResumeWithSTAR(contentToAnalyze);
 
                 boolean saveSuccess = resumeStorageService.saveAnalysisResult(
                         loggedInUsername,
